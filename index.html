@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant" translate="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1c2c" />
+  <meta name="google" content="notranslate" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Exploring the Blue · Pinball</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="game"></div>
+  <div id="loading">LOADING…</div>
+
+  <div id="hud">
+    <!-- PC 左側 / Mobile 頂部 -->
+    <section id="panelL" class="panel">
+      <div class="logo"><span>EXPLORING</span><span>THE BLUE</span></div>
+      <div class="stat big dmd"><label>SCORE</label><b id="score">0</b></div>
+      <div class="row">
+        <div class="stat"><label>BALL</label><b id="ballNo">-</b></div>
+        <div class="stat"><label>BONUS</label><b id="mult">×1</b></div>
+        <div class="stat hs"><label>HIGH</label><b id="high">0</b></div>
+      </div>
+    </section>
+    <!-- PC 右側：操作說明 -->
+    <section id="panelR" class="panel">
+      <h3>CONTROLS</h3>
+      <ul class="keys">
+        <li><kbd>Z</kbd><kbd>←</kbd><kbd>L-Shift</kbd><span>左擋板</span></li>
+        <li><kbd>/</kbd><kbd>→</kbd><kbd>R-Shift</kbd><span>右擋板</span></li>
+        <li><kbd>Space</kbd><kbd>↓</kbd><span>按住蓄力、放開發射</span></li>
+        <li><kbd>N</kbd><span>推桌 Nudge</span></li>
+        <li><kbd>P</kbd><span>暫停</span> <kbd>M</kbd><span>靜音</span></li>
+        <li><kbd>D</kbd><span>DEV 微調工具</span></li>
+      </ul>
+      <h3>MISSIONS</h3>
+      <ul class="rules">
+        <li><b>S·K·Y</b> 頂部三道全亮 → Bonus 倍率 +1</li>
+        <li><b>SATELLITE / SHOOTING STAR</b> 兩組立靶全亮 → 多球</li>
+        <li><b>ORBIT</b> 繞行 3 次 → EVOLUTION 50,000</li>
+        <li>多球時繞行 = JACKPOT，全分數 ×2</li>
+      </ul>
+    </section>
+
+    <div id="saveLamp">SHOOT AGAIN</div>
+    <div id="msg"><div id="msgTitle"></div><div id="msgSub"></div></div>
+
+    <div id="start" class="show">
+      <div class="card">
+        <div class="logo big"><span>EXPLORING</span><span>THE BLUE</span></div>
+        <div class="tap">TAP / PRESS ENTER</div>
+        <div class="hint pc-only">Z / ← 左擋板　·　/ / → 右擋板　·　Space 發射</div>
+        <div class="hint mobile-only">點畫面左半邊 = 左擋板　·　右半邊 = 右擋板<br />球在發射道時，按住右半邊蓄力、放開發射</div>
+        <div class="hs">HIGH SCORE <b id="startHigh">0</b></div>
+      </div>
+    </div>
+
+    <div class="corner">
+      <button id="muteBtn" title="靜音 (M)">🔊</button>
+      <button id="gearBtn" title="DEV 微調 (D)">⚙</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
