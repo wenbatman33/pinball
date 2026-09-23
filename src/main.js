@@ -1,4 +1,5 @@
-import Phaser from 'phaser';
+// 命名空間匯入：Vite 打包與瀏覽器直跑（import map → Phaser ESM）皆可用
+import * as Phaser from 'phaser';
 import { PinballPhysics, TICK } from './physics.js';
 import { WORLD, PHYS_DEFAULT, LAYOUT_DEFAULT, buildWalls, PLUNGER } from './table.js';
 import { drawPlayfield, drawRamps, makeBallTexture, makeBallGlow, makeShadowTexture, makeBumperCap, makeSpark, C } from './art.js';
@@ -14,7 +15,8 @@ class TableScene extends Phaser.Scene {
   constructor() { super('table'); }
 
   preload() {
-    this.load.image('artbg', 'art/playfield.jpg');
+    // 以模組相對路徑定位底圖：Vite 開發 / 打包 / 瀏覽器直接執行原始碼 三種情況都正確
+    this.load.image('artbg', new URL('./assets/playfield.jpg', import.meta.url).href);
   }
 
   create() {

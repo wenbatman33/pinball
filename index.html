@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./src/style.css" />
+  <!-- 不經打包直接執行原始碼時（GitHub Pages 分支發布），由 CDN 載入 Phaser ESM；Vite 開發/打包時不受影響 -->
+  <script type="importmap">{ "imports": { "phaser": "https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.esm.js" } }</script>
 </head>
 <body>
   <div id="game"></div>
