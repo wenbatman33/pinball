@@ -13,21 +13,21 @@ export function loadOverrides() {
 
 const PHYS_UI = [
   ['gravity', '重力', 600, 3000, 10],
-  ['flipperOmega', '擋板角速度', 8, 40, 0.5],
-  ['flipperReturnOmega', '擋板回彈速度', 6, 40, 0.5],
-  ['flipperAccel', '擋板角加速度', 300, 5000, 50],
-  ['flipperFriction', '擋板橡膠摩擦', 0, 0.8, 0.01],
-  ['flipperE', '擋板恢復係數', 0, 0.9, 0.01],
-  ['wallE', '牆恢復係數', 0, 0.9, 0.01],
-  ['rubberE', '橡膠恢復係數', 0, 0.95, 0.01],
-  ['bumperKick', '彈跳器彈力', 200, 1600, 10],
-  ['slingKick', '彈弓彈力', 100, 1400, 10],
-  ['slingThreshold', '彈弓觸發門檻', 20, 400, 5],
-  ['plungerMin', '發射最小速度', 300, 2000, 10],
-  ['plungerMax', '發射最大速度', 1500, 3400, 10],
-  ['friction', '摩擦係數 μ', 0, 0.5, 0.005],
-  ['restThreshold', '靜止門檻', 0, 150, 1],
-  ['timeScale', '時間倍率(慢動作)', 0.1, 1.5, 0.05],
+  ['flipperOmega', '挡板角速度', 8, 40, 0.5],
+  ['flipperReturnOmega', '挡板回弹速度', 6, 40, 0.5],
+  ['flipperAccel', '挡板角加速度', 300, 5000, 50],
+  ['flipperFriction', '挡板橡胶摩擦', 0, 0.8, 0.01],
+  ['flipperE', '挡板恢复系数', 0, 0.9, 0.01],
+  ['wallE', '墙恢复系数', 0, 0.9, 0.01],
+  ['rubberE', '橡胶恢复系数', 0, 0.95, 0.01],
+  ['bumperKick', '弹跳器弹力', 200, 1600, 10],
+  ['slingKick', '弹弓弹力', 100, 1400, 10],
+  ['slingThreshold', '弹弓触发门槛', 20, 400, 5],
+  ['plungerMin', '发射最小速度', 300, 2000, 10],
+  ['plungerMax', '发射最大速度', 1500, 3400, 10],
+  ['friction', '摩擦系数 μ', 0, 0.5, 0.005],
+  ['restThreshold', '静止门槛', 0, 150, 1],
+  ['timeScale', '时间倍率(慢动作)', 0.1, 1.5, 0.05],
 ];
 
 export class DevTool {
@@ -66,11 +66,11 @@ export class DevTool {
     const d = document.createElement('div');
     d.id = 'dev';
     d.innerHTML = `
-      <div class="dev-h">🛠 DEV 微調 <span class="dev-k">D 關閉</span></div>
+      <div class="dev-h">🛠 DEV 微调 <span class="dev-k">D 关闭</span></div>
       <div class="dev-sec">
-        <div class="dev-t">版面 / 狀態</div>
+        <div class="dev-t">版面 / 状态</div>
         <div class="dev-row">
-          <button data-a="mode-auto" class="on">自動</button>
+          <button data-a="mode-auto" class="on">自动</button>
           <button data-a="mode-pc">PC</button>
           <button data-a="mode-mobile">Mobile</button>
         </div>
@@ -82,33 +82,33 @@ export class DevTool {
         <div class="dev-row">
           <button data-a="evolution">EVOLUTION</button>
           <button data-a="jackpot">JACKPOT</button>
-          <button data-a="gameover">結算</button>
+          <button data-a="gameover">结算</button>
           <button data-a="worm">WORMHOLE 亮</button>
         </div>
         <div class="dev-row">
-          <button data-a="colliders" class="on">碰撞體</button>
-          <button data-a="pause">暫停</button>
-          <button data-a="slow">慢動作</button>
+          <button data-a="colliders" class="on">碰撞体</button>
+          <button data-a="pause">暂停</button>
+          <button data-a="slow">慢动作</button>
         </div>
       </div>
       <div class="dev-sec">
-        <div class="dev-t">選取元件 <span id="devSelName" class="dev-k">（在桌面上點選 / 拖曳）</span></div>
+        <div class="dev-t">选取组件 <span id="devSelName" class="dev-k">（在台面上点击 / 拖动）</span></div>
         <div id="devSel"></div>
       </div>
       <div class="dev-sec">
-        <div class="dev-t">底圖</div>
+        <div class="dev-t">底图</div>
         <div id="devArt"></div>
       </div>
       <div class="dev-sec">
-        <div class="dev-t">物理參數</div>
+        <div class="dev-t">物理参数</div>
         <div id="devPhys"></div>
       </div>
       <div class="dev-sec">
         <div class="dev-row">
-          <button data-a="export" class="primary">💾 匯出 / 鎖定</button>
-          <button data-a="reset">還原預設</button>
+          <button data-a="export" class="primary">💾 导出 / 锁定</button>
+          <button data-a="reset">恢复默认</button>
         </div>
-        <textarea id="devOut" readonly placeholder="匯出的 JSON 會出現在這裡（已同步複製到剪貼簿）"></textarea>
+        <textarea id="devOut" readonly placeholder="导出的 JSON 会出现在这里（已同步复制到剪贴板）"></textarea>
       </div>`;
     document.body.appendChild(d);
     this.el = d;
@@ -148,7 +148,7 @@ export class DevTool {
   showSel(h) {
     this.sel = h;
     const box = this.el.querySelector('#devSel');
-    this.el.querySelector('#devSelName').textContent = h ? h.name : '（在桌面上點選 / 拖曳）';
+    this.el.querySelector('#devSelName').textContent = h ? h.name : '（在台面上点击 / 拖动）';
     box.innerHTML = '';
     if (!h) return;
     const apply = () => this.changed();
@@ -178,7 +178,7 @@ export class DevTool {
     this.el.querySelector('#devOut').value = out;
     navigator.clipboard?.writeText(out).catch(() => {});
     this.persist();
-    this.scene.hud.message('EXPORTED', '已複製 JSON 到剪貼簿', 1.5);
+    this.scene.hud.message('EXPORTED', '已复制 JSON 到剪贴板', 1.5);
     console.log('[DEV EXPORT]\n' + out);
   }
 
@@ -203,7 +203,7 @@ export class DevTool {
       case 'slow': sc.phys.timeScale = sc.phys.timeScale < 1 ? 1 : 0.25; btn.classList.toggle('on', sc.phys.timeScale < 1); this.buildPhys(); break;
       case 'export': this.exportJSON(); break;
       case 'reset':
-        if (!confirm('還原為程式內建預設值？（本機調整會清除）')) break;
+        if (!confirm('恢复为程序内置默认值？（本地调整会被清除）')) break;
         try { localStorage.removeItem(STORE); } catch { /* 忽略 */ }
         Object.assign(sc.phys, JSON.parse(JSON.stringify(PHYS_DEFAULT)));
         const fresh = JSON.parse(JSON.stringify(LAYOUT_DEFAULT));

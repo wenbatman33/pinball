@@ -20,7 +20,7 @@ class TableScene extends Phaser.Scene {
   }
 
   create() {
-    const ov = loadOverrides();
+    const ov = new URLSearchParams(location.search).has('dev') ? loadOverrides() : {};
     this.layoutData = ov.layout || JSON.parse(JSON.stringify(LAYOUT_DEFAULT));
     this.phys = { ...PHYS_DEFAULT, ...(ov.phys || {}) };
     this.artCfg = { sat: 0.45, bright: 0.72, ...(ov.art || {}) }; // 底圖彩度 / 亮度
@@ -52,6 +52,15 @@ class TableScene extends Phaser.Scene {
       this.saveLabels[side] = this.add.text(x, 1005.5, 'SAVE', { fontFamily: 'Bungee', fontSize: '22px', color: '#0a1724' })
         .setOrigin(0.5).setScale(0.5).setResolution(2).setDepth(3);
     }
+    // 獎勵倍率燈：疊在底圖印刷燈片上（左 2X → 上 3X → 右 4X → 下 5X）
+    this.multLamps = [
+      { x: 241.3, y: 892.1, r: 13, col: 0x3fe060, m: 2 },
+      { x: 291.2, y: 870.0, r: 13, col: 0xffd84a, m: 3 },
+      { x: 340.9, y: 892.2, r: 13, col: 0x3fe060, m: 4 },
+      { x: 291.2, y: 906.8, r: 13, col: 0xff7a2a, m: 5 },
+    ];
+    this.multLabels = this.multLamps.map((l) => this.add.text(l.x, l.y + 0.5, l.m + 'X',
+      { fontFamily: 'Bungee', fontSize: '20px', color: '#1a0c06' }).setOrigin(0.5).setScale(0.5).setResolution(2).setDepth(3));
     this.gPlunger = this.add.graphics();
     this.gFlip = this.add.graphics();
     this.ballSprites = new Map();
@@ -70,6 +79,9 @@ class TableScene extends Phaser.Scene {
     this.hud = new HUD(this);
     this.rules = new GameRules(this.sim, this.sfx, this.hud);
     this.dev = new DevTool(this);
+    // 開發者工具不對玩家開放：只有網址帶 ?dev 時才能開啟（齒輪按鈕 / D 鍵）
+    this.devEnabled = new URLSearchParams(location.search).has('dev');
+    document.getElementById('gearBtn').hidden = !this.devEnabled;
     this.setupInput();
     this.onResize();
     this.scale.on('resize', () => {});
@@ -143,7 +155,7 @@ class TableScene extends Phaser.Scene {
       const role = roleOf(e.code);
       if (role) e.preventDefault();
       if (e.repeat) return;
-      if (e.code === 'KeyD') return this.dev.toggle();
+      if (e.code === 'KeyD' && this.devEnabled) return this.dev.toggle();
       if (e.code === 'KeyM') return this.toggleMute();
       if (e.code === 'KeyP') { this.paused = !this.paused; this.hud.message(this.paused ? 'PAUSED' : 'GO', '', this.paused ? 99 : 0.5); return; }
       if (e.code === 'KeyN') return this.nudge();
@@ -223,7 +235,13 @@ class TableScene extends Phaser.Scene {
 
   startGame() {
     this.sfx.unlock();
+    // 遊戲結束後：結束畫面出現前、或剛出現的防誤觸時間內，不接受開新局
+    if (this.rules.state === 'gameover') {
+      if (!this.hud.el.over.classList.contains('show') || !this.hud.endReady()) return;
+    }
+    if (this.rules.state === 'play') return;
     this.hud.showStart(false);
+    this.hud.hideEnd();
     this.rules.startGame();
   }
 
@@ -502,6 +520,37 @@ class TableScene extends Phaser.Scene {
       g.fillStyle(on ? hex(C.yellow) : 0x5a3a1c, 1).fillCircle(ins.x, ins.y, 8);
       if (on) g.fillStyle(0xffffff, 0.6).fillCircle(ins.x - 2, ins.y - 2, 3);
     });
+
+    // 星星 rollover：五角星燈片（亮 = 本輪已經過）
+    const starPts = (cx, cy, R1, R2) => {
+      const pts = [];
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? R2 : R1;
+        pts.push(new Phaser.Math.Vector2(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr));
+      }
+      return pts;
+    };
+    for (const st of L.stars || []) {
+      const flash = R.isLit(st.id) || (R.isLit('starfield') && blink(8));
+      const on = flash || !!R.stars[st.id];
+      if (on) g.fillStyle(0xffd84a, 0.25).fillCircle(st.x, st.y, 17);
+      g.fillStyle(0x05060f, 0.9).fillPoints(starPts(st.x, st.y + 1, 13, 5.5), true);
+      g.fillStyle(flash ? 0xffffff : on ? 0xffd84a : 0x5a4418, 1).fillPoints(starPts(st.x, st.y, 11, 4.6), true);
+    }
+
+    // 獎勵倍率燈：已達成的倍率亮起；剛升級的那顆快閃
+    for (const [i, l] of this.multLamps.entries()) {
+      const on = R.mult >= l.m;
+      const fresh = on && R.mult === l.m && R.isLit('multUp') && blink(8);
+      if (on) {
+        g.fillStyle(l.col, 0.3).fillCircle(l.x, l.y, l.r + 9);
+        g.fillStyle(fresh ? 0xffffff : l.col, 1).fillCircle(l.x, l.y, l.r);
+        g.fillStyle(0xffffff, 0.55).fillCircle(l.x - 4, l.y - 4, 4);
+      } else {
+        g.fillStyle(0x05060f, 0.62).fillCircle(l.x, l.y, l.r + 1); // 熄燈：壓暗底圖燈片
+      }
+      this.multLabels[i].setAlpha(on ? 1 : 0.35).setColor(on ? '#1a0c06' : '#f3e6c4');
+    }
 
     // 球保燈（SHOOT AGAIN）
     const saving = R.state === 'play' && t < R.ballSaveUntil;

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant" translate="no">
+<html lang="zh-Hans" translate="no">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -9,7 +9,7 @@
   <title>Exploring the Blue · Pinball</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./src/style.css" />
   <!-- 不經打包直接執行原始碼時（GitHub Pages 分支發布），由 CDN 載入 Phaser ESM；Vite 開發/打包時不受影響 -->
   <script type="importmap">{ "imports": { "phaser": "https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.esm.js" } }</script>
@@ -31,40 +31,49 @@
     </section>
     <!-- PC 右側：操作說明 -->
     <section id="panelR" class="panel">
-      <h3>CONTROLS</h3>
+      <h3>操作</h3>
       <ul class="keys">
-        <li><kbd>Z</kbd><kbd>←</kbd><kbd>L-Shift</kbd><span>左擋板</span></li>
-        <li><kbd>/</kbd><kbd>→</kbd><kbd>R-Shift</kbd><span>右擋板</span></li>
-        <li><kbd>Space</kbd><kbd>↓</kbd><span>按住蓄力、放開發射</span></li>
-        <li><kbd>N</kbd><span>推桌 Nudge</span></li>
-        <li><kbd>P</kbd><span>暫停</span> <kbd>M</kbd><span>靜音</span></li>
-        <li><kbd>D</kbd><span>DEV 微調工具</span></li>
-      </ul>
-      <h3>MISSIONS</h3>
-      <ul class="rules">
-        <li><b>S·K·Y</b> 頂部三道全亮 → Bonus 倍率 +1</li>
-        <li><b>SATELLITE / SHOOTING STAR</b> 兩組立靶全亮 → 多球</li>
-        <li><b>ORBIT</b> 繞行 3 次 → EVOLUTION 50,000</li>
-        <li>多球時繞行 = JACKPOT，全分數 ×2</li>
+        <li><kbd>Z</kbd><kbd>←</kbd><kbd>L-Shift</kbd><span>左挡板</span></li>
+        <li><kbd>/</kbd><kbd>→</kbd><kbd>R-Shift</kbd><span>右挡板</span></li>
+        <li><kbd>Space</kbd><kbd>↓</kbd><span>按住蓄力，松开发射</span></li>
+        <li><kbd>N</kbd><span>推台</span></li>
+        <li><kbd>P</kbd><span>暂停</span> <kbd>M</kbd><span>静音</span></li>
       </ul>
     </section>
 
     <div id="saveLamp">SHOOT AGAIN</div>
     <div id="msg"><div id="msgTitle"></div><div id="msgSub"></div></div>
 
-    <div id="start" class="show">
-      <div class="card">
-        <div class="logo big"><span>EXPLORING</span><span>THE BLUE</span></div>
-        <div class="tap">TAP / PRESS ENTER</div>
-        <div class="hint pc-only">Z / ← 左擋板　·　/ / → 右擋板　·　Space 發射</div>
-        <div class="hint mobile-only">點畫面左半邊 = 左擋板　·　右半邊 = 右擋板<br />球在發射道時，按住右半邊蓄力、放開發射</div>
-        <div class="hs">HIGH SCORE <b id="startHigh">0</b></div>
+    <!-- 開始畫面 -->
+    <div id="start" class="screen show">
+      <div class="scr-inner">
+        <div class="scr-tag">1990s ARCADE PINBALL</div>
+        <div class="chrome-title"><span>EXPLORING</span><span>THE BLUE</span></div>
+        <div class="scr-sub">探索蔚蓝 · 太空弹珠台</div>
+        <button id="btnStart" class="scr-btn">开始游戏</button>
+        <div class="dmd-box"><label>最高分</label><b id="startHigh">0</b></div>
+      </div>
+    </div>
+
+    <!-- 結束畫面 -->
+    <div id="over" class="screen">
+      <div class="scr-inner">
+        <div class="chrome-title red"><span>GAME OVER</span></div>
+        <div class="scr-sub">游戏结束</div>
+        <div class="dmd-box big"><label>本局得分</label><b id="overScore">0</b></div>
+        <div id="overNew" class="new-record">★ 新纪录 ★</div>
+        <div class="over-high">最高分 <b id="overHigh">0</b></div>
+        <div id="overStats" class="over-stats"></div>
+        <div class="scr-btns">
+          <button id="btnAgain" class="scr-btn">再玩一次</button>
+          <button id="btnMenu" class="scr-btn ghost">返回主菜单</button>
+        </div>
       </div>
     </div>
 
     <div class="corner">
-      <button id="muteBtn" title="靜音 (M)">🔊</button>
-      <button id="gearBtn" title="DEV 微調 (D)">⚙</button>
+      <button id="muteBtn" title="静音 (M)">🔊</button>
+      <button id="gearBtn" title="开发者调整 (D)" hidden>⚙</button>
     </div>
   </div>
 

@@ -14,12 +14,27 @@ export class HUD {
       score: this.$('score'), ball: this.$('ballNo'), high: this.$('high'), mult: this.$('mult'),
       msg: this.$('msg'), msgT: this.$('msgTitle'), msgS: this.$('msgSub'),
       start: this.$('start'), startHigh: this.$('startHigh'),
+      over: this.$('over'), overScore: this.$('overScore'), overHigh: this.$('overHigh'),
+      overNew: this.$('overNew'), overStats: this.$('overStats'),
       save: this.$('saveLamp'),
       mute: this.$('muteBtn'), gear: this.$('gearBtn'),
     };
     this.cache = {};
     this.msgTimer = null;
+    this.endShownAt = 0;
+    const tap = (id, fn) => this.$(id).addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); fn(); });
+    tap('btnStart', () => scene.startGame());
+    tap('btnAgain', () => scene.startGame());
+    tap('btnMenu', () => {
+      if (!this.endReady()) return;
+      scene.rules.state = 'attract'; // 回到待機，開始畫面才能正常開新局
+      this.hideEnd();
+      this.showStart(true);
+    });
+    // 開始畫面：點任何地方都可開始（按鈕只是視覺焦點）
     this.el.start.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); scene.startGame(); });
+    // 結束畫面：吞掉點擊，避免穿透到台面
+    this.el.over.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); });
     this.el.mute.addEventListener('pointerdown', (e) => { e.stopPropagation(); scene.toggleMute(); });
     this.el.gear.addEventListener('pointerdown', (e) => { e.stopPropagation(); scene.dev.toggle(); });
   }
@@ -58,6 +73,33 @@ export class HUD {
     this.el.startHigh.textContent = fmt(this.scene.rules.high);
     this.el.start.classList.toggle('show', on);
   }
+
+  // 結束畫面：分數滾動計數 + 新紀錄 + 本局統計
+  showEnd({ score, high, isHigh, stats }) {
+    const { over, overScore, overHigh, overNew, overStats } = this.el;
+    overHigh.textContent = fmt(high);
+    overNew.classList.toggle('show', isHigh);
+    const items = [
+      ['坡道', stats.ramps], ['绕行', stats.orbits], ['JACKPOT', stats.jackpots],
+      ['多球', stats.multiballs], ['弹跳器', stats.bumpers], ['救球', stats.saves],
+    ];
+    overStats.innerHTML = items.map(([k, v]) => `<div><b>${fmt(v)}</b><span>${k}</span></div>`).join('');
+    over.classList.add('show');
+    this.endShownAt = performance.now();
+    // 分數從 0 滾到最終值
+    const t0 = performance.now(), dur = Math.min(1400, 400 + score / 200);
+    const tick = (now) => {
+      const k = Math.min(1, (now - t0) / dur);
+      overScore.textContent = fmt(score * (1 - Math.pow(1 - k, 3)));
+      if (k < 1 && over.classList.contains('show')) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  hideEnd() { this.el.over.classList.remove('show'); }
+
+  // 結束畫面出現後 1.2 秒內不接受開始（避免還按著的按鍵誤觸直接開新局）
+  endReady() { return performance.now() - this.endShownAt > 1200; }
 
   spark(x, y, n) { this.scene.spark(x, y, n); }
   ring(x, y) { this.scene.ring(x, y); }

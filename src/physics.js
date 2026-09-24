@@ -48,6 +48,8 @@ export class PinballPhysics {
         fnx: Math.sin(a), fny: -Math.cos(a) };
     });
     this.sensors = L.rollovers.map((r) => ({ ...r }));
+    // 星星 rollover 也是感應器（半徑 12）
+    for (const st of L.stars || []) this.sensors.push({ id: st.id, x: st.x, y: st.y, r: 12, star: true });
     const oldDrop = new Map((this.drops || []).map((d) => [d.id, d.down]));
     this.drops = (L.drops || []).map((t) => {
       const a = t.a * DEG, h = t.len / 2;
@@ -312,7 +314,7 @@ export class PinballPhysics {
     for (const w of this.walls) {
       if (w.type === 'arc') {
         const c = closestOnArc(b.x, b.y, w);
-        this.hitPoint(b, c.x, c.y, w.r, w.mat === 'rubber' ? P.rubberE : P.wallE);
+        this.hitPoint(b, c.x, c.y, w.r, w.mat === 'rubber' ? P.rubberE : P.wallE, w);
       } else if (w.type === 'gate') {
         // 單向閘：球心在正面才碰撞（正面 = 左上方）
         const nx = w.ay - w.by, ny = w.bx - w.ax; // 左手法向
@@ -431,6 +433,7 @@ export class PinballPhysics {
     const vn = this.resolve(b, nx, ny, R - d, e);
     // 橡膠撞擊（計分 + 閃光）
     if (w && w.mat === 'rubber' && vn < -180 && this.ready(w, 0.12)) this.emit('rubber', { x: qx, y: qy, w });
+    else if (w && w.mat !== 'rubber' && vn < -220 && this.ready(w, 0.06)) this.emit('wall', { power: -vn });
     return vn;
   }
 

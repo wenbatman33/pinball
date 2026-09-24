@@ -34,6 +34,13 @@ export const LAYOUT_DEFAULT = {
     { id: 'bumper1', x: 226, y: 262, r: 28, label: 'DATA' },
     { id: 'bumper2', x: 366, y: 262, r: 28, label: 'SAT' },
     { id: 'bumper3', x: 296, y: 356, r: 28, label: 'SKY' },
+    // 上方 bumper 群：頂部中央接坡道出口、中段左右加密陣型
+    { id: 'bumper6', x: 296, y: 176, r: 22, label: 'TOP' },
+    { id: 'bumper7', x: 240, y: 405, r: 20, label: 'DATA' },
+    { id: 'bumper8', x: 352, y: 405, r: 20, label: 'SAT' },
+    // WORMHOLE 兩側迷你 bumper（原橡膠柱升級）
+    { id: 'bumper4', x: 188, y: 640, r: 14, label: '★' },
+    { id: 'bumper5', x: 404, y: 640, r: 14, label: '★' },
   ],
   // 三角彈弓：a=上角, b=下角(靠外), c=右下角(靠擋板)；a→c 為彈射面
   slings: [
@@ -62,6 +69,7 @@ export const LAYOUT_DEFAULT = {
   // 旋轉片（球穿越時旋轉計分，不阻擋）
   spinners: [
     { id: 'spinL', x: 43, y: 290, w: 34 },
+    { id: 'spinR', x: 583, y: 232, w: 34 },
   ],
   // 感應器（不碰撞）
   rollovers: [
@@ -85,10 +93,16 @@ export const LAYOUT_DEFAULT = {
   saucers: [
     { id: 'wormhole', x: 296, y: 482, r: 13 },   // 對齊底圖中央漩渦
   ],
-  // 計分橡膠柱
-  posts: [
-    { id: 'postL', x: 188, y: 640, r: 8 },
-    { id: 'postR', x: 404, y: 640, r: 8 },
+  // 計分橡膠柱（已升級為迷你 bumper）
+  posts: [],
+  // 星星 Rollover：嵌在台面的感應燈（不擋球），全亮 = STAR FIELD
+  stars: [
+    { id: 'star1', x: 182, y: 522 },
+    { id: 'star2', x: 410, y: 522 },
+    { id: 'star3', x: 296, y: 226 },
+    { id: 'star4', x: 236, y: 742 },
+    { id: 'star5', x: 356, y: 742 },
+    { id: 'star6', x: 296, y: 800 },
   ],
 };
 

@@ -33,6 +33,9 @@ export class GameRules {
     if (this.sim.drops) this.sim.resetDrops();
     this.lastRamp = null;
     this.ramps = 0;
+    // 本局統計（結束畫面用）
+    this.stats = { ramps: 0, orbits: 0, jackpots: 0, multiballs: 0, bumpers: 0, saves: 0 };
+    this.stars = {};          // 已亮的星星 rollover
     this.ring = 0;            // WORMHOLE 燈環（0~12）
     this.wormLit = false;
     this.lastOrbit = null;
@@ -128,7 +131,7 @@ export class GameRules {
       case 'bumper':
         this.sfx.bumper();
         this.light(e.id, 0.18);
-        if (play) { this.add(100, e.x, e.y - 34); this.bonus += 20; }
+        if (play) { this.add(100, e.x, e.y - 34); this.bonus += 20; this.stats.bumpers++; }
         this.ui.spark(e.x, e.y, 16);
         this.ui.ring(e.x, e.y);
         // 連續快打 bumper → 微震
@@ -172,6 +175,7 @@ export class GameRules {
       case 'sensor': this.onSensor(e); break;
       case 'flipperHit': this.sfx.flipperHit(e.power); break;
       case 'ballHit': this.sfx.ballHit(); break;
+      case 'wall': this.sfx.wall(e.power); break;
       case 'plunger': this.sfx.launch(e.power); break;
       case 'drain': this.onDrain(e.ball); break;
       case 'rampEnter': this.sfx.rampEnter(); break;
@@ -205,6 +209,23 @@ export class GameRules {
   onSensor(e) {
     const play = this.state === 'play';
     const id = e.id;
+    if (id.startsWith('star')) {
+      this.sfx.rollover();
+      this.light(id, 0.35);
+      if (!play) return;
+      this.add(500, e.ball.x, e.ball.y - 18);
+      this.bonus += 50;
+      this.stars[id] = true;
+      if (Object.keys(this.stars).length >= 6) {
+        this.stars = {};
+        this.add(25000);
+        this.addRing(2);
+        this.sfx.award();
+        this.light('starfield', 1.5);
+        this.ui.message('STAR FIELD!', '+25,000', 1.8);
+      }
+      return;
+    }
     if (id.startsWith('lane')) {
       const i = 'SKY'.indexOf(id.slice(-1));
       this.sfx.rollover();
@@ -214,7 +235,8 @@ export class GameRules {
       if (!this.lanes[i]) {
         this.lanes[i] = true;
         if (this.lanes.every(Boolean)) {
-          this.mult = Math.min(6, this.mult + 1);
+          this.mult = Math.min(5, this.mult + 1); // 對應台面 2X~5X 四顆倍率燈
+          this.light('multUp', 1.5);
           this.add(5000);
           this.addRing(2);
           this.sfx.award();
@@ -237,6 +259,7 @@ export class GameRules {
       if (this.kick[side] && e.ball.vy > 0) {
         // 第一次掉入：救球裝置把球彈回台面；第二次就會出界
         this.kick[side] = false;
+        this.stats.saves++;
         this.sim.kick(e.ball, (Math.random() - 0.5) * 60, -this.sim.P.kickback);
         this.light('kick' + side, 0.5);
         this.sfx.kickback();
@@ -261,12 +284,14 @@ export class GameRules {
     const combo = this.lastRamp && this.lastRamp.id !== e.id && this.now() - this.lastRamp.t < 5;
     this.lastRamp = { id: e.id, t: this.now() };
     this.ramps++;
+    this.stats.ramps++;
     this.bonus += 250;
     this.addRing(2);
     if (this.multiball) {
       this.add(15000, e.ball.x + 30, e.ball.y - 30, true);
       this.sfx.jackpot();
       this.ui.message('RAMP JACKPOT!', '+30,000', 1.6);
+      this.stats.jackpots++;
       return;
     }
     const pts = combo ? 15000 : 5000;
@@ -295,6 +320,7 @@ export class GameRules {
       this.add(100000, e.x, e.y - 30, true);
       this.sfx.jackpot();
       this.ui.message('WORMHOLE!', '+100,000', 2.4);
+      this.stats.jackpots++;
       this.ui.shake();
     } else {
       this.add(2500, e.x, e.y - 30);
@@ -308,10 +334,13 @@ export class GameRules {
       this.add(10000);
       this.sfx.jackpot();
       this.ui.message('JACKPOT!', '+20,000', 1.8);
+      this.stats.jackpots++;
+      this.stats.orbits++;
       this.ui.shake();
       return;
     }
     this.orbits++;
+    this.stats.orbits++;
     this.add(2500);
     this.addRing(2);
     this.sfx.award();
@@ -325,6 +354,7 @@ export class GameRules {
   }
 
   startMultiball() {
+    if (this.state === 'play') this.stats.multiballs++;
     this.banks.L = [false, false, false];
     this.multiball = true;
     this.pendingBalls += 2;
@@ -340,6 +370,7 @@ export class GameRules {
     // 球保
     if (this.now() < this.ballSaveUntil && b.launchedFlag) {
       this.sfx.saved();
+      this.stats.saves++;
       this.ui.message('BALL SAVED', '', 1.4);
       if (this.multiball) { this.pendingBalls++; }
       else { this.serveBallAuto(); }
@@ -374,8 +405,10 @@ export class GameRules {
     this.sfx.gameOver();
     const isHigh = this.score > this.high;
     if (isHigh) { this.high = this.score; safeSet(HS_KEY, String(this.high)); }
-    this.ui.message('GAME OVER', isHigh ? 'NEW HIGH SCORE!' : `BONUS ${fmt(bonus)}`, 3);
-    setTimeout(() => this.ui.showStart(true), 1600);
+    this.ui.message('GAME OVER', isHigh ? 'NEW HIGH SCORE!' : `BONUS ${fmt(bonus)}`, 1.8);
+    // 喊聲結束後顯示結束畫面（停在畫面上，等玩家選擇）
+    const result = { score: this.score, high: this.high, isHigh, stats: { ...this.stats } };
+    setTimeout(() => { if (this.state === 'gameover') this.ui.showEnd(result); }, 1900);
   }
 
   // 擋板按下時的換道（S-K-Y 燈號旋轉）
